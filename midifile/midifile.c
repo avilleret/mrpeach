@@ -678,13 +678,13 @@ static void midifile_float(t_midifile *x, t_float ticks)
 {
     size_t  cTime = (size_t)ticks;
     size_t  total_time;
-    int     j, result = 1, ended = 0;
+    int     j, ended = 0;
 
     switch (x->state)
     {
         case mfReading: /* cue to ticks */
             midifile_rewind_tracks(x);
-            for (j = 0; ((j < x->header_chunk.chunk_ntrks)&&(result != 0)); ++j)
+            for (j = 0; j < x->header_chunk.chunk_ntrks; ++j)
             {
                 if (x->track_chunk[j].total_time != NO_MORE_ELEMENTS)
                 {
