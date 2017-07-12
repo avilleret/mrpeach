@@ -208,6 +208,11 @@ static void *midifile_new(t_symbol *s, int argc, t_atom *argv)
     x->midi_data[0].a_type = x->midi_data[1].a_type = x->midi_data[2].a_type = A_FLOAT;
     x->state = mfReset;
     x->verbosity = 1; /* default to posting all */
+
+    x->midi_list_outlet = outlet_new(&x->x_obj, &s_list);
+    x->total_time_outlet = outlet_new(&x->x_obj, &s_float); /* current total_time */
+    x->status_outlet = outlet_new(&x->x_obj, &s_anything);/* last outlet for everything else */
+
     for (i = 0; i < MAX_TRACKS; ++i)
     {
         x->track_chunk[i].track_data = NULL;
@@ -231,9 +236,7 @@ static void *midifile_new(t_symbol *s, int argc, t_atom *argv)
             }
         }
     }
-    x->midi_list_outlet = outlet_new(&x->x_obj, &s_list);
-    x->total_time_outlet = outlet_new(&x->x_obj, &s_float); /* current total_time */
-    x->status_outlet = outlet_new(&x->x_obj, &s_anything);/* last outlet for everything else */
+
     return (void *)x;
 }
 
@@ -292,12 +295,12 @@ static void midifile_free(t_midifile *x)
     midifile_free_file(x);
 }
 
-/** midifile_open_path attempts to open a file. 
+/** midifile_open_path attempts to open a file.
 - path is a string.
 - Up to PATH_BUF_SIZE-1 characters will be copied into x->fPath.
 - mode should be "rb" or "wb".
 - x->fPath will be used as a file name to open.
-- Returns 1 if successful, else 0. 
+- Returns 1 if successful, else 0.
 */
 static int midifile_open_path(t_midifile *x, char *path, char *mode)
 {
@@ -492,7 +495,7 @@ static void midifile_read(t_midifile *x, t_symbol *path)
     {
         if (x->verbosity) post("midifile: opened %s", x->fPath);
         x->state = mfReading;
-        if (midifile_read_chunks(x) == 0) midifile_free_file(x); // 
+        if (midifile_read_chunks(x) == 0) midifile_free_file(x); //
     }
     else error("midifile: Unable to open %s", path->s_name);
 }
@@ -717,8 +720,8 @@ static void midifile_float(t_midifile *x, t_float ticks)
 
 /** midifile_read_chunks reads in the MIDI file chunks.
 *
-- calls midifile_read_header_chunk() and then 
-- calls midifile_read_track_chunk() for each track 
+- calls midifile_read_header_chunk() and then
+- calls midifile_read_track_chunk() for each track
 */
 static int midifile_read_chunks(t_midifile *x)
 {
@@ -906,7 +909,7 @@ static int midifile_read_track_chunk(t_midifile *x, int mfindex)
         error ("midifile: Unable to allocate %zu bytes for track data", len);
         return 0;
     }
-    x->track_chunk[mfindex].track_data = (unsigned char*)cP;	
+    x->track_chunk[mfindex].track_data = (unsigned char*)cP;
     n = fread(cP, 1L, len, x->fP);
 
     return 1;
@@ -1049,7 +1052,7 @@ static void midifile_set_track(t_midifile *x, t_floatarg track)
         post ("midifile track not between 0 and %d; using %d.", MAX_TRACKS, x->track);
         return;
       }
-      else 
+      else
       {
         x->track = track; // possibly update x->header_chunk.chunk_ntrks
         if (x->track_chunk[x->track].track_data == NULL)
@@ -1129,7 +1132,7 @@ static size_t midifile_get_next_track_chunk_delta_time(t_midifile *x, int mfinde
 * first_byte is followed by len bytes at cP
 */
 static void midifile_output_long_list (t_outlet *outlet, unsigned char *cP, size_t len, unsigned char first_byte)
-{ 
+{
     size_t          slen;
     unsigned int    si;
     t_atom          *slist;
