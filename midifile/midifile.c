@@ -676,9 +676,11 @@ If mfReading or mfWriting, outputs new total_time
 */
 static void midifile_float(t_midifile *x, t_float ticks)
 {
-    size_t  cTime = (size_t)ticks;
+    long  cTime = (long) ticks;
     size_t  total_time;
     int     j, ended = 0;
+
+    if (cTime < 0) return;
 
     switch (x->state)
     {
